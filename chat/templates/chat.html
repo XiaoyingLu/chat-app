@@ -1,25 +1,55 @@
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <title>Chat</title>
     <style>
-      input { display: block; }
-      ul    { list-style: none; }
+      #messages {
+        list-style: none;
+        padding-left: 0;
+      }
+      #messages li {
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+      }
+      #messages li img {
+        width: 40px;
+        margin-right: 10px;
+        border-radius: 50%;
+      }
+      #chatbox textarea {
+        resize: none;
+      }
     </style>
   </head>
   <body>
-    <ul id="messages"></ul>
-    <form id="chatbox">
-      {{.UserData.name}}:<br/>
-      <textarea></textarea>
-      <input type="submit" value="Send" />
-    </form>
+    <div class="container my-4">
+      <div class="card">
+        <div class="card-body">
+          <ul id="messages" class="mb-0"></ul>
+        </div>
+      </div>
+  
+      <form id="chatbox" class="mt-3">
+        <div class="mb-3">
+          <label for="message" class="form-label">
+            Send a message as {{.UserData.name}} or 
+            <a href="/logout">Sign out</a>
+          </label>
+          <textarea id="message" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+    </div>
 
       <script  src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-4CmD2tuZMjE+mFWU3cCTWjEMsM6QUPfMuTvoECF+1rMFhVaN0+lJ6DKfJm1Uy/9z" crossorigin="anonymous"></script>
       </script>
           <script>
             $(function(){
               var socket = null;
-              var msgBox = $("#chatbox textarea");
+              var msgBox = $("#message");
               var messages = $("#messages");
               $("#chatbox").submit(function(){
                 if (!msgBox.val()) return false;
@@ -31,24 +61,31 @@
                 msgBox.val("");
                 return false;
               });
-              if (!window["WebSocket"]) {
+              if (!window.WebSocket) {
                 alert("Error: Your browser does not support web  sockets.")
               } else {
                 socket = new WebSocket("ws://{{.Host}}/room");
                 socket.onclose = function() {
                   alert("Connection has been closed.");
                 }
-                socket.onmessage = function(e) {
+                socket.onmessage = function (e) {
                   var msg = JSON.parse(e.data);
-                  messages.append(
-                    $("<li>").append(
-                      $("<strong>").text(msg.Name + ": "),
-                      $("<span>").text(msg.Message)
-                    )
+                  var messageItem = $("<li>").append(
+                    $("<img>")
+                      .attr("src", msg.AvatarURL)
+                      .attr("alt", msg.Name)
+                      .attr("data-bs-toggle", "tooltip")
+                      .attr("data-bs-placement", "top")
+                      .attr("title", msg.Name),
+                    $("<span>").text(msg.Message)
                   );
-                }
+                  messages.append(messageItem);
+                  // Initialize tooltip on newly added image
+                  messageItem.find('[data-bs-toggle="tooltip"]').tooltip();
+                };                
               }
             });
           </script>
+
   </body>
 </html>

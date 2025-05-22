@@ -9,4 +9,5 @@ import (
      Name    string
      Message string
      When    time.Time
+     AvatarURL string
 }
