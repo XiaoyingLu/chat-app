@@ -61,10 +61,14 @@ func main() {
        "http://localhost:8080/auth/callback/google"),
 	)
 
-	r := newRoom()
+	r := newRoom(UseFileSystemAvatar) // UseAuthAvatar, UseGravatar
 	r.tracer = trace.New(os.Stdout)
 	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("assets"))))
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
+	http.Handle("/upload", &templateHandler{filename: "upload.html"})
+	http.HandleFunc("/uploader", uploaderHandler)
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
+
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
