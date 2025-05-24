@@ -20,6 +20,13 @@ import (
 	"trace"
 )
 
+// global variable: set the active Avatar implementation
+var avatars Avatar = TryAvatars{
+	UseFileSystemAvatar,
+	UseAuthAvatar,
+	UseGravatar,
+}
+
 // templ represents a single template
 type templateHandler struct {
 	once     sync.Once
@@ -61,7 +68,7 @@ func main() {
        "http://localhost:8080/auth/callback/google"),
 	)
 
-	r := newRoom(UseFileSystemAvatar) // UseAuthAvatar, UseGravatar
+	r := newRoom()
 	r.tracer = trace.New(os.Stdout)
 	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("assets"))))
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
